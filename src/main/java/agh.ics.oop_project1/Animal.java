@@ -1,7 +1,8 @@
-package main.java.agh.ics.oop_project1;
+package agh.ics.oop_project1;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.TreeSet;
 
 public class Animal implements IMapElement {
 
@@ -15,6 +16,13 @@ public class Animal implements IMapElement {
     private int childrenCount;
     private int daysLived;
     private LinkedList<IObserver> observers;
+
+    public int getDaysLived() {
+        return daysLived;
+    }
+    public int getChildrenCount() {
+        return childrenCount;
+    }
 
     public Animal(IWorldMap map, int genomeLength, int startingEnergy) {
         this(map, map.placeAtRandomPosition(), genomeLength, startingEnergy);
@@ -92,5 +100,15 @@ public class Animal implements IMapElement {
     private void stateChange() {
         this.observers.forEach(observer -> observer.stateChanged());
     }
+
+
+    public void consumeFlora(TreeSet<Vector2d> fieldsAlreadyConsumed) {
+        if(!fieldsAlreadyConsumed.contains(this)) {
+            ArrayList<Animal> animalsOnSamePosition = map.animalsAt(this.position);
+
+        }
+    }
+
+
 
 }

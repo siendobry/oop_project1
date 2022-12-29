@@ -1,4 +1,4 @@
-package main.java.agh.ics.oop_project1;
+package agh.ics.oop_project1;
 
 public interface IObserver {
 

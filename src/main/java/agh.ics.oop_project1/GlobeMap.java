@@ -1,4 +1,4 @@
-package main.java.agh.ics.oop_project1;
+package agh.ics.oop_project1;
 
 public class GlobeMap extends AbstractWorldMap {
 
@@ -19,5 +19,7 @@ public class GlobeMap extends AbstractWorldMap {
             animal.setPosition(new Vector2d(0, animal.getPosition().getY()));
         }
     }
+
+
 
 }

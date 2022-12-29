@@ -1,10 +1,12 @@
-package main.java.agh.ics.oop_project1;
+package agh.ics.oop_project1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class AbstractWorldMap implements IWorldMap {
 
+    //it would be practical to store animals in every list sorted by energy, age, number of children
+    //it probably forces changing type from ArrayList to something that stores elements in order
     private final HashMap<Vector2d, ArrayList<Animal>> animals;
     private final HashMap<Vector2d, ArrayList<Flora>> flora;
 //    private final ArrayList<Vector2d> moreProbableArea;
@@ -35,6 +37,11 @@ public abstract class AbstractWorldMap implements IWorldMap {
 
     public ArrayList<Flora> floraAt(Vector2d position) {
         return this.flora.get(position);
+    }
+
+    //this method adds new flora to the map after end of every day
+    public void growFlora() {
+
     }
 
 }
