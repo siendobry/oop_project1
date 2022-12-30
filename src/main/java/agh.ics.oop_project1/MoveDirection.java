@@ -69,7 +69,7 @@ public enum MoveDirection {
     }
 
     public MoveDirection rotate(int rotation) {
-        return intToMoveDir((this.toInt() + rotation) % 7);
+        return intToMoveDir((this.toInt() + rotation) % 8);
     }
 
 }

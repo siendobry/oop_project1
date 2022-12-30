@@ -8,27 +8,29 @@ public class Animal implements IMapElement {
 
     private Vector2d position;
     private MoveDirection orientation;
-    private ArrayList genome;
+    private ArrayList<Integer> genome;
     private int activeGene;
     private final IWorldMap map;
     private int energy;
     private int eatenCount;
     private int childrenCount;
-    private int daysLived;
+    private int dateOfBirth;
+    private int deceaseDate;
     private LinkedList<IObserver> observers;
+    private int id;
 
-    public int getDaysLived() {
-        return daysLived;
+    public int getDateOfBirth() {
+        return this.dateOfBirth;
     }
     public int getChildrenCount() {
         return childrenCount;
     }
 
-    public Animal(IWorldMap map, int genomeLength, int startingEnergy) {
-        this(map, map.placeAtRandomPosition(), genomeLength, startingEnergy);
+    public Animal(IWorldMap map, int genomeLength, int startingEnergy, int id, int currentDay) {
+        this(map, map.placeAtRandomPosition(), genomeLength, startingEnergy, id, currentDay);
     }
 
-    public Animal(IWorldMap map, Vector2d position, int genomeLength, int startingEnergy) {
+    public Animal(IWorldMap map, Vector2d position, int genomeLength, int startingEnergy, int id, int currentDay) {
         this.map = map;
         this.position = position;
         this.orientation = orientation.getRandomDirection();
@@ -37,8 +39,13 @@ public class Animal implements IMapElement {
         this.energy = startingEnergy;
         this.eatenCount = 0;
         this.childrenCount = 0;
-        this.daysLived = 0;
+        this.dateOfBirth = currentDay;
         this.observers = new LinkedList<>();
+        this.id = id;
+    }
+
+    public int getId() {
+        return this.id;
     }
 
     public Vector2d getPosition() {
@@ -76,8 +83,17 @@ public class Animal implements IMapElement {
     // move method passes current animal's position added to animal orientation's vector
     // then receives proper position after executed movement action and updates animal's position
     public void move() {
+        Vector2d oldPosition = this.getPosition();
         this.map.moveAnimal(this);
-        this.positionChange();
+        this.positionChange(oldPosition);
+        int rngRes = RandomNumberGenerator.getRandomNumber(0, 4);
+        if (rngRes == 0) {
+            this.activeGene = RandomNumberGenerator.getRandomNumber(0, this.genome.size());
+        }
+        else {
+            this.activeGene = (this.activeGene + 1) % this.genome.size();
+        }
+        this.orientation.rotate(this.genome.get(this.activeGene));
     }
 
     @Override
@@ -93,22 +109,25 @@ public class Animal implements IMapElement {
         this.observers.remove(observer);
     }
 
-    private void positionChange() {
-        this.observers.forEach(observer -> observer.positionChanged());
+    private void positionChange(Vector2d oldPosition) {
+        this.observers.forEach(observer -> observer.positionChanged(this, oldPosition));
     }
 
     private void stateChange() {
-        this.observers.forEach(observer -> observer.stateChanged());
+        this.observers.forEach(IObserver::stateChanged);
     }
 
+    public void die(int currentDay) {
+        this.deceaseDate = currentDay;
+        this.stateChange();
+    }
 
-    public void consumeFlora(TreeSet<Vector2d> fieldsAlreadyConsumed) {
-        if(!fieldsAlreadyConsumed.contains(this)) {
-            ArrayList<Animal> animalsOnSamePosition = map.animalsAt(this.position);
-
+    public void consumeFlora(int nutritionValue) {
+        if(this.map.floraAt(this.getPosition()) != null) {
+            Animal animalToConsume = map.animalsAt(this.position).first();
+            animalToConsume.setEnergy(animalToConsume.getEnergy() + nutritionValue);
+            this.map.removeFlora(animalToConsume.getPosition());
         }
     }
-
-
 
 }

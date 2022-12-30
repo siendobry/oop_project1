@@ -7,40 +7,48 @@ public class SimulationEngine implements Runnable {
 
     private IWorldMap map;
     private int numberOfAnimals;
-    private ArrayList<Animal> animals;
+    private final ArrayList<Animal> animals = new ArrayList<>();
     private int lengthOfGenome;
     private int initialEnergy;
+    private int animalCounter = 0;
+    private final int floraGrowth;
+    private int nutritionValue;
+    private int currentDay;
 
 
-    public SimulationEngine(IWorldMap map, int numberOfAnimals, int initialEnergy) {
+    public SimulationEngine(IWorldMap map, int numberOfAnimals, int initialEnergy, int startingFlora, int floraGrowth, int nutritionValue) {
         this.map = map;
         this.numberOfAnimals = numberOfAnimals;
-        map.putFlora();
+        this.currentDay = 0;
         for(int i = 0; i < numberOfAnimals; i++) {
-            animals.add(new Animal(map, lengthOfGenome, initialEnergy));
+            animals.add(new Animal(map, lengthOfGenome, initialEnergy, animalCounter, currentDay));
+            animalCounter++;
         }
+        this.map.putFlora(startingFlora);
+        this.floraGrowth = floraGrowth;
+        this.nutritionValue = nutritionValue;
     }
 
 
     public void run() {
         for(Animal animal : animals) {
             if(animal.getEnergy() <= 0) {
-                animal.die();
+                animal.die(this.currentDay);
                 animals.remove(animal);
             }
         }
         for(Animal animal : animals) {
             animal.move();
         }
-        TreeSet<Vector2d> fieldsAlreadyConsumed = new TreeSet<>();
         for(Animal animal : animals) {
-            animal.consumeFlora(fieldsAlreadyConsumed);
+            animal.consumeFlora(nutritionValue);
 
         }
         for(Animal animal : animals) {
             animal.breed();
         }
-        map.growFlora();
+        map.putFlora(this.floraGrowth);
+        this.currentDay++;
     }
 
 }

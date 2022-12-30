@@ -7,11 +7,14 @@ public class AnimalComparator implements Comparator<Animal> {
         if(a1.getEnergy() < a2.getEnergy())
             return -1;
         else if(a1.getEnergy() == a2.getEnergy()) {
-            if(a2.getDaysLived() < a2.getDaysLived())
+            if(a2.getDateOfBirth() > a2.getDateOfBirth())
                 return -1;
-            else if(a1.getDaysLived() == a2.getDaysLived()) {
+            else if(a1.getDateOfBirth() == a2.getDateOfBirth()) {
                 if(a1.getChildrenCount() < a2.getChildrenCount())
                     return -1;
+                else if (a1.getChildrenCount() == a2.getChildrenCount()) {
+                    return a1.getId() - a2.getId();
+                }
             }
         }
         return 1;

@@ -2,19 +2,20 @@ package agh.ics.oop_project1;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 public interface IWorldMap {
 
-    void putFlora();
+    void putFlora(int amount);
+
+    void removeFlora(Vector2d position);
 
     void moveAnimal(Animal animal);
 
     Vector2d placeAtRandomPosition();
 
-    ArrayList<Animal> animalsAt(Vector2d position);
+    TreeSet<Animal> animalsAt(Vector2d position);
 
-    ArrayList<Flora> floraAt(Vector2d position);
-
-    void growFlora();
+    Flora floraAt(Vector2d position);
 
 }
