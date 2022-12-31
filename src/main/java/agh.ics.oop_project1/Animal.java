@@ -43,6 +43,19 @@ public class Animal implements IMapElement {
         this.observers = new LinkedList<>();
         this.id = id;
     }
+    public Animal(IWorldMap map, Vector2d position, int genomeLength, int startingEnergy, int id, int currentDay, ArrayList<Integer> genome) {
+        this.map = map;
+        this.position = position;
+        this.orientation = orientation.getRandomDirection();
+        this.genome = genome;
+        this.activeGene = RandomNumberGenerator.getRandomNumber(0, genomeLength);
+        this.energy = startingEnergy;
+        this.eatenCount = 0;
+        this.childrenCount = 0;
+        this.dateOfBirth = currentDay;
+        this.observers = new LinkedList<>();
+        this.id = id;
+    }
 
     public int getId() {
         return this.id;
@@ -128,6 +141,16 @@ public class Animal implements IMapElement {
             animalToConsume.setEnergy(animalToConsume.getEnergy() + nutritionValue);
             this.map.removeFlora(animalToConsume.getPosition());
         }
+    }
+
+    //this method does not create a new animal, nor is it applied to two of the animals - it modifies stats of a parent
+    public void breed(int energyConsumed) {
+        energy = energy - energyConsumed;
+        childrenCount++;
+    }
+
+    public ArrayList<Integer> getGenome() {
+        return genome;
     }
 
 }
