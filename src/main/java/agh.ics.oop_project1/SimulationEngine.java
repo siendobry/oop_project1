@@ -17,13 +17,13 @@ public class SimulationEngine implements Runnable {
     private final int floraGrowth;
     private int nutritionValue;
     private int currentDay;
-
     private int energyNeededToBreed;
     private int energyLossOnBreeding;
+    private int minMutations;
+    private int maxMutations;
 
 
-
-    public SimulationEngine(IWorldMap map, int numberOfAnimals, int initialEnergy, int startingFlora, int floraGrowth, int nutritionValue, int energyNeededToBreed, int energyLossOnBreeding) {
+    public SimulationEngine(IWorldMap map, int numberOfAnimals, int initialEnergy, int startingFlora, int floraGrowth, int nutritionValue, int energyNeededToBreed, int energyLossOnBreeding, int minMutations, int maxMutations) {
         this.map = map;
         this.numberOfAnimals = numberOfAnimals;
         this.currentDay = 0;
@@ -36,6 +36,8 @@ public class SimulationEngine implements Runnable {
         this.nutritionValue = nutritionValue;
         this.energyNeededToBreed = energyNeededToBreed;
         this.energyLossOnBreeding = energyLossOnBreeding;
+        this.minMutations = minMutations;
+        this.maxMutations = maxMutations;
     }
 
 
@@ -54,7 +56,7 @@ public class SimulationEngine implements Runnable {
 
         }
 
-        HashSet<Vector2d> processedFields = new HashSet<Vector2d>();
+        HashSet<Vector2d> processedFields = new HashSet<>();
 
         for(Animal animal : animals) {
             Vector2d position = animal.getPosition();
@@ -90,20 +92,21 @@ public class SimulationEngine implements Runnable {
                     }
 
                     //mutations - to discuss
-
-                    for(int i = 0; i < lengthOfGenome; i++) {
-                        int randomNumber = RandomNumberGenerator.getRandomNumber(0,3);
+                    ArrayList<Integer> genes = new ArrayList<>();
+                    for (int i = 0; i < lengthOfGenome; i++) {
+                        genes.add(i);
+                    }
+                    int numberOfMutations = RandomNumberGenerator.getRandomNumber(this.minMutations, this.maxMutations + 1);
+                    for(int i = 0; i < numberOfMutations; i++) {
+                        int geneToMutate = genes.remove(RandomNumberGenerator.getRandomNumber(0, genes.size()));
+                        int randomNumber = RandomNumberGenerator.getRandomNumber(0,2);
                         if(randomNumber == 0)
-                            newbornsGenome.set(i, newbornsGenome.get(i + 1));
+                            newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 9) % 8);
                         else if(randomNumber == 1)
-                            newbornsGenome.set(i, newbornsGenome.get(i - 1));
-                        if(newbornsGenome.get(i) == 8)
-                            newbornsGenome.set(i,0);
-                        if(newbornsGenome.get(i) == -1)
-                            newbornsGenome.set(i,7);
+                            newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 7) % 8);
                     }
 
-                    animals.add(new Animal(map, position, lengthOfGenome, initialEnergy, numberOfAnimals, currentDay, newbornsGenome));
+                    animals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, numberOfAnimals, currentDay, newbornsGenome));
                     animalCounter++;
                     firstAnimal.breed(energyLossOnBreeding);
                     secondAnimal.breed(energyLossOnBreeding);
