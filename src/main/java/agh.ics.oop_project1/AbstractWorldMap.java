@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-public abstract class AbstractWorldMap implements IWorldMap {
+public abstract class AbstractWorldMap implements IWorldMap, IObserver {
 
     //it would be practical to store animals in every list sorted by energy, age, number of children
     //it probably forces changing type from ArrayList to something that stores elements in order
@@ -12,30 +12,57 @@ public abstract class AbstractWorldMap implements IWorldMap {
     private final HashMap<Vector2d, Flora> flora;
     private final ArrayList<Vector2d> moreProbableArea;
     private final ArrayList<Vector2d> lessProbableArea;
-    protected final int height;
-    protected final int width;
+    protected final int heightCoordinate;
+    protected final int widthCoordinate;
 
-    public AbstractWorldMap(int height, int width) {
+    public AbstractWorldMap(int heightCoordinate, int widthCoordinate) {
         this.animals = new HashMap<>();
         this.flora = new HashMap<>();
-        this.height = height - 1;
-        this.width = width - 1;
+        this.heightCoordinate = heightCoordinate - 1;
+        this.widthCoordinate = widthCoordinate - 1;
         this.moreProbableArea = new ArrayList<>();
         this.lessProbableArea = new ArrayList<>();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < (int)Math.round((2 * (double)height) / 5); j++) {
+        for (int i = 0; i < widthCoordinate; i++) {
+            for (int j = 0; j < (int)Math.round((2 * (double) heightCoordinate) / 5); j++) {
                 this.lessProbableArea.add(new Vector2d(i, j));
             }
-            for (int j = (int) Math.round((2 * (double)height) / 5); j < (int)Math.round((3 * (double)height) / 5); j++) {
+            for (int j = (int) Math.round((2 * (double) heightCoordinate) / 5); j < (int)Math.round((3 * (double) heightCoordinate) / 5); j++) {
                 this.moreProbableArea.add(new Vector2d(i, j));
             }
-            for (int j = (int) Math.round((3 * (double)height) / 5); j < height; j++) {
+            for (int j = (int) Math.round((3 * (double) heightCoordinate) / 5); j < heightCoordinate; j++) {
                 this.lessProbableArea.add(new Vector2d(i, j));
             }
         }
     }
 
-    // TO DO
+    public int getHeight() {
+        return heightCoordinate + 1;
+    }
+
+    public int getWidth() {
+        return widthCoordinate + 1;
+    }
+
+    public HashMap<Vector2d, IMapElement> getElements() {
+        HashMap<Vector2d, IMapElement> elements = new HashMap<>();
+        for(Flora flora: this.flora.values()) {
+            elements.put(flora.getPosition(), flora);
+        }
+        for(TreeSet<Animal> animalSet: this.animals.values()) {
+            elements.put(animalSet.last().getPosition(), animalSet.last());
+        }
+        return elements;
+    }
+
+    public void restoreFloraArea(Vector2d position) {
+        if (position.getY() >= (int) Math.round((2 * (double) heightCoordinate) / 5) && position.getY() < (int)Math.round((3 * (double) heightCoordinate) / 5)) {
+            this.moreProbableArea.add(position);
+        }
+        else {
+            this.lessProbableArea.add(position);
+        }
+    }
+
     public void putFlora(int amount) {
         for (int i = 0; i < amount; i++) {
             int rngResult = RandomNumberGenerator.getRandomNumber(0, 4);
@@ -48,13 +75,18 @@ public abstract class AbstractWorldMap implements IWorldMap {
                 randomField = this.lessProbableArea.remove(randomIdx);
             }
             if (randomField != null) {
-                this.flora.put(randomField, new Flora());
+                this.flora.put(randomField, new Flora(randomField));
             }
         }
     }
 
     public void removeAnimal(Animal animal) {
-
+        if (this.animals.get(animal.getPosition()).size() == 1) {
+            this.animals.remove(animal.getPosition());
+        }
+        else {
+            this.animals.get(animal.getPosition()).remove(animal);
+        }
     }
 
     public void removeFlora(Vector2d position) {
@@ -62,11 +94,11 @@ public abstract class AbstractWorldMap implements IWorldMap {
     }
 
     public Vector2d placeAtRandomPosition() {
-        return new Vector2d(RandomNumberGenerator.getRandomNumber(0, this.width),
-                            RandomNumberGenerator.getRandomNumber(0, this.height));
+        return new Vector2d(RandomNumberGenerator.getRandomNumber(0, this.widthCoordinate),
+                            RandomNumberGenerator.getRandomNumber(0, this.heightCoordinate));
     }
 
-    public void placeAt(Animal animal) {
+    public void placeAnimal(Animal animal) {
         if (this.animals.get(animal.getPosition()) != null) {
             this.animals.get(animal.getPosition()).add(animal);
         }
@@ -86,12 +118,17 @@ public abstract class AbstractWorldMap implements IWorldMap {
     }
 
     public void positionChanged(Animal animal, Vector2d oldPosition) {
-        this.animals.get(oldPosition).remove(animal);
-        this.placeAt(animal);
+        if (this.animals.get(oldPosition).size() == 1) {
+            this.animals.remove(oldPosition);
+        }
+        else {
+            this.animals.get(oldPosition).remove(animal);
+        }
+        this.placeAnimal(animal);
     }
 
-    public void stateChanged() {
-
+    public void stateChanged(Animal animal) {
+        this.removeAnimal(animal);
     }
 
 }

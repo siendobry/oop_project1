@@ -128,7 +128,7 @@ public class Animal implements IMapElement {
     }
 
     private void stateChange() {
-        this.observers.forEach(IObserver::stateChanged);
+        this.observers.forEach(observer -> observer.stateChanged(this));
     }
 
     public void die(int currentDay) {
@@ -138,9 +138,11 @@ public class Animal implements IMapElement {
 
     public void consumeFlora(int nutritionValue) {
         if(this.map.floraAt(this.getPosition()) != null) {
-            Animal animalToConsume = map.animalsAt(this.position).first();
+            Animal animalToConsume = map.animalsAt(this.position).pollLast();
+            map.animalsAt(this.position).add(animalToConsume);
             animalToConsume.setEnergy(animalToConsume.getEnergy() + nutritionValue);
             this.map.removeFlora(animalToConsume.getPosition());
+            this.map.restoreFloraArea(this.position);
         }
     }
 

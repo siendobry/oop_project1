@@ -1,10 +1,17 @@
 package agh.ics.oop_project1;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 public interface IWorldMap extends IObserver {
+
+    int getHeight();
+
+    int getWidth();
+
+    HashMap<Vector2d, IMapElement> getElements();
+
+    void restoreFloraArea(Vector2d position);
 
     void putFlora(int amount);
 
@@ -12,7 +19,7 @@ public interface IWorldMap extends IObserver {
 
     void moveAnimal(Animal animal);
 
-    void placeAt(Animal animal);
+    void placeAnimal(Animal animal);
 
     Vector2d placeAtRandomPosition();
 

@@ -4,6 +4,6 @@ public interface IObserver {
 
     void positionChanged(Animal animal, Vector2d oldPosition);
 
-    void stateChanged();
+    void stateChanged(Animal animal);
 
 }

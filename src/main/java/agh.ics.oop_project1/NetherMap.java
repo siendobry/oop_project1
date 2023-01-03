@@ -12,8 +12,8 @@ public class NetherMap extends AbstractWorldMap {
 
     public void moveAnimal(Animal animal) {
         animal.setPosition(animal.getPosition().add(animal.getOrientation().toUnitVector()));
-        if (animal.getPosition().getY() < 0 || animal.getPosition().getY() > this.height
-                || animal.getPosition().getX() < 0 || animal.getPosition().getX() > this.width) {
+        if (animal.getPosition().getY() < 0 || animal.getPosition().getY() > this.heightCoordinate
+                || animal.getPosition().getX() < 0 || animal.getPosition().getX() > this.widthCoordinate) {
             animal.setEnergy(animal.getEnergy() - drainEnergyAmount);
             animal.setPosition(this.placeAtRandomPosition());
         }
