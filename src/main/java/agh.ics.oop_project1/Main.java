@@ -1,9 +1,14 @@
 package agh.ics.oop_project1;
 
+import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println(RandomNumberGenerator.getRandomNumber(1, 1));
+        Scanner input = new Scanner(System.in);
+        String filename = input.nextLine();
+        ConfigurationManager configmanager = new ConfigurationManager(filename);
+        SimulationEngine engine = new SimulationEngine(configmanager);
+        engine.run();
     }
 
 }

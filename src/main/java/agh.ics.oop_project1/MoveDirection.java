@@ -50,7 +50,7 @@ public enum MoveDirection {
         };
     }
 
-    private MoveDirection intToMoveDir(int orientationInt) {
+    private static MoveDirection intToMoveDir(int orientationInt) {
         return switch(orientationInt) {
             case 0 -> NORTH;
             case 4 -> SOUTH;
@@ -64,9 +64,10 @@ public enum MoveDirection {
         };
     }
 
-    public MoveDirection getRandomDirection() {
+    public static MoveDirection getRandomDirection() {
         return intToMoveDir(RandomNumberGenerator.getRandomNumber(0, 8));
     }
+
 
     public MoveDirection rotate(int rotation) {
         return intToMoveDir((this.toInt() + rotation) % 8);

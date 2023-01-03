@@ -33,7 +33,7 @@ public class Animal implements IMapElement {
     public Animal(IWorldMap map, Vector2d position, int genomeLength, int startingEnergy, int id, int currentDay) {
         this.map = map;
         this.position = position;
-        this.orientation = orientation.getRandomDirection();
+        this.orientation = MoveDirection.getRandomDirection();
         this.genome = this.generateGenome(genomeLength);
         this.activeGene = RandomNumberGenerator.getRandomNumber(0, genomeLength);
         this.energy = startingEnergy;

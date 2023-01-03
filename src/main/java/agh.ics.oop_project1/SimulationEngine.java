@@ -16,12 +16,35 @@ public class SimulationEngine implements Runnable {
     private int animalCounter = 0;
     private final int floraGrowth;
     private int nutritionValue;
-    private int currentDay;
+    private int currentDay = 0;
     private int energyNeededToBreed;
     private int energyLossOnBreeding;
     private int minMutations;
     private int maxMutations;
 
+    public SimulationEngine(ConfigurationManager configmanager) {
+        if(configmanager.getMapVariant().equals("globe")) {
+            this.map = new GlobeMap(configmanager.getMapHeight(), configmanager.getMapWidth());
+        }
+        else if(configmanager.getMapVariant().equals("nether")) {
+            this.map = new NetherMap(configmanager.getMapHeight(), configmanager.getMapWidth(), configmanager.getDrainEnergyAmount());
+        }
+
+        this.numberOfAnimals = configmanager.getNumberOfAnimals();
+        this.floraGrowth = configmanager.getFloraGrowth();
+        this.nutritionValue = configmanager.getNutritionValue();
+        this.energyNeededToBreed = configmanager.getEnergyNeededToBreed();
+        this.energyLossOnBreeding = configmanager.getEnergyLossOnBreeding();
+        this.minMutations = configmanager.getMinMutations();
+        this.maxMutations = configmanager.getMaxMutations();
+
+        for(int i = 0; i < numberOfAnimals; i++) {
+            animals.add(new Animal(map, configmanager.getLengthOfGenome(), configmanager.getInitialEnergy(), animalCounter, currentDay));
+            animalCounter++;
+        }
+
+        this.map.putFlora(configmanager.getStartingFlora());
+    }
 
     public SimulationEngine(IWorldMap map, int numberOfAnimals, int initialEnergy, int startingFlora, int floraGrowth, int nutritionValue, int energyNeededToBreed, int energyLossOnBreeding, int minMutations, int maxMutations) {
         this.map = map;
