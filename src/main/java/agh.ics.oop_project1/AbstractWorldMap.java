@@ -131,4 +131,12 @@ public abstract class AbstractWorldMap implements IWorldMap, IObserver {
         this.removeAnimal(animal);
     }
 
+    public int countFlora() {
+        return flora.size();
+    }
+
+    public int countFreeFields() {
+        return (heightCoordinate+1) * (widthCoordinate+1) - animals.size();
+    }
+
 }

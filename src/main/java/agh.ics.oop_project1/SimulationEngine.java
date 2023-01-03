@@ -1,12 +1,14 @@
 package agh.ics.oop_project1;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SimulationEngine implements Runnable {
 
     private IWorldMap map;
     private int numberOfAnimals;
     private final ArrayList<Animal> animals = new ArrayList<>();
+    private HashMap<String,Integer> mostPopularGenotypes = new HashMap<>();
     private int lengthOfGenome;
     private int animalCounter = 0;
     private final int floraGrowth;
@@ -16,6 +18,8 @@ public class SimulationEngine implements Runnable {
     private int energyLossOnBreeding;
     private int minMutations;
     private int maxMutations;
+    private long daysLivedByDead = 0;
+    private long deadCount = 0;
 
     public SimulationEngine(ConfigurationManager configmanager) {
         if(configmanager.getMapVariant().equals("globe")) {
@@ -40,6 +44,14 @@ public class SimulationEngine implements Runnable {
             animal.addObserver(this.map);
             map.placeAnimal(animal);
             animalCounter++;
+            String genomeString = animal.getGenome().stream().map(Object::toString)
+                    .collect(Collectors.joining());
+            if(!mostPopularGenotypes.containsKey(genomeString)) {
+                mostPopularGenotypes.put(genomeString,1);
+            }
+            else {
+                mostPopularGenotypes.put(genomeString, mostPopularGenotypes.remove(genomeString)+1);
+            }
         }
 
         this.map.putFlora(configmanager.getStartingFlora());
@@ -55,6 +67,14 @@ public class SimulationEngine implements Runnable {
             animal.addObserver(this.map);
             map.placeAnimal(animal);
             animalCounter++;
+            String genomeString = animal.getGenome().stream().map(Object::toString)
+                    .collect(Collectors.joining());
+            if(!mostPopularGenotypes.containsKey(genomeString)) {
+                mostPopularGenotypes.put(genomeString,1);
+            }
+            else {
+                mostPopularGenotypes.put(genomeString, mostPopularGenotypes.remove(genomeString)+1);
+            }
         }
         this.map.putFlora(startingFlora);
         this.floraGrowth = floraGrowth;
@@ -69,6 +89,28 @@ public class SimulationEngine implements Runnable {
         return Collections.unmodifiableList(this.animals);
     }
 
+    public StatisticsSet returnStatistics() {
+        int animalsAlive = animals.size();
+        int floraCount = map.countFlora();
+        int numberOfFreeFields = map.countFreeFields();
+        float averageEnergy = 0;
+        for(Animal a : animals) {
+            averageEnergy+=(float)a.getEnergy();
+        }
+        averageEnergy/=(float)animalsAlive;
+        String mostPopularGenotype = "";
+        int countMostPopularGenotype = 0;
+        for(String genotype : mostPopularGenotypes.keySet()) {
+            if(mostPopularGenotypes.get(genotype) > countMostPopularGenotype) {
+                countMostPopularGenotype = mostPopularGenotypes.get(genotype);
+                mostPopularGenotype = genotype;
+            }
+        }
+        float averageDaysLived = (float) daysLivedByDead / (float) deadCount;
+
+        return new StatisticsSet(animalsAlive, floraCount, numberOfFreeFields, mostPopularGenotype, averageEnergy, averageDaysLived);
+    }
+
     public void run() {
         try {
             while (animals.size() > 0) {
@@ -77,6 +119,8 @@ public class SimulationEngine implements Runnable {
                     if (animal.getEnergy() <= 0) {
                         animal.die(this.currentDay);
                         toBeRemoved.add(animal);
+                        deadCount++;
+                        daysLivedByDead += (currentDay - animal.getDateOfBirth());
                     }
                 }
                 for (Animal animal : toBeRemoved) {
@@ -97,15 +141,9 @@ public class SimulationEngine implements Runnable {
                     TreeSet<Animal> animalsSharingPosition = map.animalsAt(position);
 
                     if (!processedFields.contains(position) && animalsSharingPosition.size() > 1) {
-//                    for (Animal a: animalsSharingPosition
-//                    ) {
-//                        System.out.println(a.getId()+" "+a.getEnergy()+" "+a.getPosition().toString());
-//                    }
-
 
                         Animal firstAnimal = animalsSharingPosition.pollFirst();
                         Animal secondAnimal = animalsSharingPosition.pollFirst();
-
 
                         if (firstAnimal.getEnergy() > energyNeededToBreed && secondAnimal.getEnergy() > energyNeededToBreed) {
                             ArrayList<Integer> firstGenome = firstAnimal.getGenome();
@@ -149,6 +187,14 @@ public class SimulationEngine implements Runnable {
 
                             newbornAnimals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, animalCounter, currentDay, newbornsGenome));
                             animalCounter++;
+                            String genomeString = animal.getGenome().stream().map(Object::toString)
+                                    .collect(Collectors.joining());
+                            if(!mostPopularGenotypes.containsKey(genomeString)) {
+                                mostPopularGenotypes.put(genomeString,1);
+                            }
+                            else {
+                                mostPopularGenotypes.put(genomeString, mostPopularGenotypes.remove(genomeString)+1);
+                            }
                             firstAnimal.breed(energyLossOnBreeding);
                             secondAnimal.breed(energyLossOnBreeding);
                             processedFields.add(position);

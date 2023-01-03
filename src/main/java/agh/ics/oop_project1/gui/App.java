@@ -20,12 +20,20 @@ public class App extends Application {
 
     private class SimulationObserver implements IObserver {
 
+        SimulationEngine engine;
         IWorldMap map;
         GridPane grid;
+        CSVFileCreator creator;
+        boolean shouldSave;
 
-        public SimulationObserver(IWorldMap map, GridPane grid) {
+        public SimulationObserver(SimulationEngine engine, IWorldMap map, GridPane grid, boolean shouldSave) {
+            this.engine = engine;
             this.map = map;
             this.grid = grid;
+            this.shouldSave = shouldSave;
+            if (shouldSave) {
+                this.creator = new CSVFileCreator("dane.csv");
+            }
         }
 
         public void positionChanged(Animal animal, Vector2d oldPosition) {
@@ -37,6 +45,9 @@ public class App extends Application {
         }
 
         private void actualizeGrid() {
+            if (this.shouldSave) {
+                creator.exportStatistics(this.engine.returnStatistics());
+            }
             Platform.runLater(() -> {
                 this.grid.getChildren().clear();
                 try {
@@ -92,6 +103,7 @@ public class App extends Application {
         TextField minMutations = new TextField();
         Label maxMutationsLabel = new Label("Maximum mutations number:");
         TextField maxMutations = new TextField();
+        CheckBox saveCSV = new CheckBox("Save statistics in CSV");
 
         Button save = new Button("Save configuration");
         Button start = new Button("Start simulation");
@@ -134,7 +146,7 @@ public class App extends Application {
                 ex.printStackTrace();
                 throw new RuntimeException(ex);
             }
-            SimulationObserver observer = new SimulationObserver(map, grid);
+            SimulationObserver observer = new SimulationObserver(engine, map, grid, saveCSV.isSelected());
             for(Animal animal: engine.getAnimals()) {
                 animal.addObserver(observer);
             }
@@ -171,6 +183,7 @@ public class App extends Application {
                 minMutations,
                 maxMutationsLabel,
                 maxMutations,
+                saveCSV,
                 controls
         );
 

@@ -27,4 +27,8 @@ public interface IWorldMap extends IObserver {
 
     Flora floraAt(Vector2d position);
 
+    int countFlora();
+
+    int countFreeFields();
+
 }
