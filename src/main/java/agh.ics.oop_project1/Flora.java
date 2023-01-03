@@ -8,4 +8,12 @@ public class Flora implements IMapElement {
     public String getImageUrl() {
         return null;
     }
+
+    public String toString() {
+        return "*";
+    }
+
+    public Vector2d getPosition() {
+        return position;
+    }
 }

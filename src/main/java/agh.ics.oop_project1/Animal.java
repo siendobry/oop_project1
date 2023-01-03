@@ -154,4 +154,8 @@ public class Animal implements IMapElement {
         return genome;
     }
 
+    public String toString() {
+        return Integer.toString(energy);
+    }
+
 }

@@ -70,11 +70,15 @@ public class SimulationEngine implements Runnable {
 
     public void run() {
         while(animals.size() > 0) {
+            ArrayList<Animal> toBeRemoved = new ArrayList<>();
             for(Animal animal : animals) {
                 if(animal.getEnergy() <= 0) {
                     animal.die(this.currentDay);
-                    animals.remove(animal);
+                    toBeRemoved.add(animal);
                 }
+            }
+            for (Animal animal: toBeRemoved) {
+                animals.remove(animal);
             }
             for(Animal animal : animals) {
                 animal.move();
@@ -92,14 +96,14 @@ public class SimulationEngine implements Runnable {
                 TreeSet<Animal> animalsSharingPosition = map.animalsAt(position);
 
                 if(!processedFields.contains(position) && animalsSharingPosition.size() > 1) {
-                    for (Animal a: animalsSharingPosition
-                    ) {
-                        System.out.println(a.getId()+" "+a.getEnergy()+" "+a.getPosition().toString());
-                    }
+//                    for (Animal a: animalsSharingPosition
+//                    ) {
+//                        System.out.println(a.getId()+" "+a.getEnergy()+" "+a.getPosition().toString());
+//                    }
 
 
-                    Animal firstAnimal = animalsSharingPosition.last();
-                    Animal secondAnimal = animalsSharingPosition.lower(firstAnimal);
+                    Animal firstAnimal = animalsSharingPosition.pollFirst();
+                    Animal secondAnimal = animalsSharingPosition.pollFirst();
 
 
                     if(firstAnimal.getEnergy() > energyNeededToBreed && secondAnimal.getEnergy() > energyNeededToBreed) {
@@ -142,19 +146,29 @@ public class SimulationEngine implements Runnable {
                                 newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 7) % 8);
                         }
 
-                        newbornAnimals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, numberOfAnimals, currentDay, newbornsGenome));
+
+
+                        newbornAnimals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, animalCounter, currentDay, newbornsGenome));
                         animalCounter++;
                         firstAnimal.breed(energyLossOnBreeding);
                         secondAnimal.breed(energyLossOnBreeding);
                         processedFields.add(position);
                     }
+                    animalsSharingPosition.add(firstAnimal);
+                    animalsSharingPosition.add(secondAnimal);
                 }
             }
             animals.addAll(newbornAnimals);
 
+            for(Animal a : newbornAnimals) {
+                map.placeAt(a);
+                a.addObserver(map);
+            }
+
+
             map.putFlora(this.floraGrowth);
             this.currentDay++;
-            System.out.println(animals.size());
+            System.out.println(currentDay+" "+animals.size());
             System.out.flush();
         }
     }

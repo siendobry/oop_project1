@@ -4,4 +4,5 @@ public interface IMapElement {
 
     String getImageUrl();
 
+    Vector2d getPosition();
 }
