@@ -37,9 +37,13 @@ public class SimulationEngine implements Runnable {
         this.energyLossOnBreeding = configmanager.getEnergyLossOnBreeding();
         this.minMutations = configmanager.getMinMutations();
         this.maxMutations = configmanager.getMaxMutations();
+        this.lengthOfGenome = configmanager.getLengthOfGenome();
 
         for(int i = 0; i < numberOfAnimals; i++) {
-            animals.add(new Animal(map, configmanager.getLengthOfGenome(), configmanager.getInitialEnergy(), animalCounter, currentDay));
+            Animal animal = new Animal(map, configmanager.getLengthOfGenome(), configmanager.getInitialEnergy(), animalCounter, currentDay);
+            animals.add(animal);
+            animal.addObserver(this.map);
+            map.placeAt(animal);
             animalCounter++;
         }
 
@@ -65,81 +69,95 @@ public class SimulationEngine implements Runnable {
 
 
     public void run() {
-        for(Animal animal : animals) {
-            if(animal.getEnergy() <= 0) {
-                animal.die(this.currentDay);
-                animals.remove(animal);
-            }
-        }
-        for(Animal animal : animals) {
-            animal.move();
-        }
-        for(Animal animal : animals) {
-            animal.consumeFlora(nutritionValue);
-
-        }
-
-        HashSet<Vector2d> processedFields = new HashSet<>();
-
-        for(Animal animal : animals) {
-            Vector2d position = animal.getPosition();
-            TreeSet<Animal> animalsSharingPosition = map.animalsAt(position);
-
-            if(!processedFields.contains(position) && animalsSharingPosition.size() > 1) {
-                Animal firstAnimal = animalsSharingPosition.first();
-                Animal secondAnimal = animalsSharingPosition.lower(firstAnimal);
-
-                if(firstAnimal.getEnergy() > energyNeededToBreed && secondAnimal.getEnergy() > energyNeededToBreed) {
-                    ArrayList<Integer> firstGenome = firstAnimal.getGenome();
-                    ArrayList<Integer> secondGenome = secondAnimal.getGenome();
-
-                    ArrayList<Integer> newbornsGenome = new ArrayList<>();
-
-                    if(RandomNumberGenerator.getRandomNumber(0,2) == 1) {
-                        int i = 0;
-                        for(; i < Math.round(firstAnimal.getEnergy() / (firstAnimal.getEnergy() + secondAnimal.getEnergy())*lengthOfGenome); i++) {
-                            newbornsGenome.add(firstGenome.get(i));
-                        }
-                        for(; i < lengthOfGenome; i++) {
-                            newbornsGenome.add(secondGenome.get(i));
-                        }
-                    }
-                    else {
-                        int i = lengthOfGenome - 1;
-                        for(; i > Math.round(firstAnimal.getEnergy() / (firstAnimal.getEnergy() + secondAnimal.getEnergy())*lengthOfGenome); i--) {
-                            newbornsGenome.add(firstGenome.get(i));
-                        }
-                        for(; i >= 0; i++) {
-                            newbornsGenome.add(secondGenome.get(i));
-                        }
-                    }
-
-                    //mutations - to discuss
-                    ArrayList<Integer> genes = new ArrayList<>();
-                    for (int i = 0; i < lengthOfGenome; i++) {
-                        genes.add(i);
-                    }
-                    int numberOfMutations = RandomNumberGenerator.getRandomNumber(this.minMutations, this.maxMutations + 1);
-                    for(int i = 0; i < numberOfMutations; i++) {
-                        int geneToMutate = genes.remove(RandomNumberGenerator.getRandomNumber(0, genes.size()));
-                        int randomNumber = RandomNumberGenerator.getRandomNumber(0,2);
-                        if(randomNumber == 0)
-                            newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 9) % 8);
-                        else if(randomNumber == 1)
-                            newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 7) % 8);
-                    }
-
-                    animals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, numberOfAnimals, currentDay, newbornsGenome));
-                    animalCounter++;
-                    firstAnimal.breed(energyLossOnBreeding);
-                    secondAnimal.breed(energyLossOnBreeding);
-                    processedFields.add(position);
+        while(animals.size() > 0) {
+            for(Animal animal : animals) {
+                if(animal.getEnergy() <= 0) {
+                    animal.die(this.currentDay);
+                    animals.remove(animal);
                 }
             }
-        }
+            for(Animal animal : animals) {
+                animal.move();
+            }
+            for(Animal animal : animals) {
+                animal.consumeFlora(nutritionValue);
 
-        map.putFlora(this.floraGrowth);
-        this.currentDay++;
+            }
+
+            HashSet<Vector2d> processedFields = new HashSet<>();
+            ArrayList<Animal> newbornAnimals = new ArrayList<>();
+
+            for(Animal animal : animals) {
+                Vector2d position = animal.getPosition();
+                TreeSet<Animal> animalsSharingPosition = map.animalsAt(position);
+
+                if(!processedFields.contains(position) && animalsSharingPosition.size() > 1) {
+                    for (Animal a: animalsSharingPosition
+                    ) {
+                        System.out.println(a.getId()+" "+a.getEnergy()+" "+a.getPosition().toString());
+                    }
+
+
+                    Animal firstAnimal = animalsSharingPosition.last();
+                    Animal secondAnimal = animalsSharingPosition.lower(firstAnimal);
+
+
+                    if(firstAnimal.getEnergy() > energyNeededToBreed && secondAnimal.getEnergy() > energyNeededToBreed) {
+                        ArrayList<Integer> firstGenome = firstAnimal.getGenome();
+                        ArrayList<Integer> secondGenome = secondAnimal.getGenome();
+
+                        ArrayList<Integer> newbornsGenome = new ArrayList<>();
+
+                        if(RandomNumberGenerator.getRandomNumber(0,2) == 1) {
+                            int i = 0;
+                            for(; i < Math.round(firstAnimal.getEnergy() / (firstAnimal.getEnergy() + secondAnimal.getEnergy())*lengthOfGenome); i++) {
+                                newbornsGenome.add(firstGenome.get(i));
+                            }
+                            for(; i < lengthOfGenome; i++) {
+                                newbornsGenome.add(secondGenome.get(i));
+                            }
+                        }
+                        else {
+                            int i = lengthOfGenome - 1;
+                            for(; i > Math.round(firstAnimal.getEnergy() / (firstAnimal.getEnergy() + secondAnimal.getEnergy())*lengthOfGenome); i--) {
+                                newbornsGenome.add(firstGenome.get(i));
+                            }
+                            for(; i >= 0; i--) {
+                                newbornsGenome.add(secondGenome.get(i));
+                            }
+                        }
+
+                        //mutations - to discuss
+                        ArrayList<Integer> genes = new ArrayList<>();
+                        for (int i = 0; i < lengthOfGenome; i++) {
+                            genes.add(i);
+                        }
+                        int numberOfMutations = RandomNumberGenerator.getRandomNumber(this.minMutations, this.maxMutations + 1);
+                        for(int i = 0; i < numberOfMutations; i++) {
+                            int geneToMutate = genes.remove(RandomNumberGenerator.getRandomNumber(0, genes.size()));
+                            int randomNumber = RandomNumberGenerator.getRandomNumber(0,2);
+                            if(randomNumber == 0)
+                                newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 9) % 8);
+                            else if(randomNumber == 1)
+                                newbornsGenome.set(geneToMutate, (newbornsGenome.get(geneToMutate) + 7) % 8);
+                        }
+
+                        newbornAnimals.add(new Animal(map, position, lengthOfGenome, 2 * energyLossOnBreeding, numberOfAnimals, currentDay, newbornsGenome));
+                        animalCounter++;
+                        firstAnimal.breed(energyLossOnBreeding);
+                        secondAnimal.breed(energyLossOnBreeding);
+                        processedFields.add(position);
+                    }
+                }
+            }
+            animals.addAll(newbornAnimals);
+
+            map.putFlora(this.floraGrowth);
+            this.currentDay++;
+            System.out.println(animals.size());
+            System.out.flush();
+        }
     }
+
 
 }

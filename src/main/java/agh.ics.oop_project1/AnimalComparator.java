@@ -13,6 +13,7 @@ public class AnimalComparator implements Comparator<Animal> {
                 if(a1.getChildrenCount() < a2.getChildrenCount())
                     return -1;
                 else if (a1.getChildrenCount() == a2.getChildrenCount()) {
+//                    System.out.println(a1.getId()+" "+a2.getId()+" "+(a1.getId() - a2.getId()));
                     return a1.getId() - a2.getId();
                 }
             }

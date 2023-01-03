@@ -4,13 +4,15 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-public interface IWorldMap {
+public interface IWorldMap extends IObserver {
 
     void putFlora(int amount);
 
     void removeFlora(Vector2d position);
 
     void moveAnimal(Animal animal);
+
+    void placeAt(Animal animal);
 
     Vector2d placeAtRandomPosition();
 

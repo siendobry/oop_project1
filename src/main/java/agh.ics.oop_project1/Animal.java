@@ -107,6 +107,7 @@ public class Animal implements IMapElement {
             this.activeGene = (this.activeGene + 1) % this.genome.size();
         }
         this.orientation.rotate(this.genome.get(this.activeGene));
+        this.energy--;
     }
 
     @Override

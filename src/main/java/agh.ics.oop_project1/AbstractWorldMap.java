@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-public abstract class AbstractWorldMap implements IWorldMap, IObserver {
+public abstract class AbstractWorldMap implements IWorldMap {
 
     //it would be practical to store animals in every list sorted by energy, age, number of children
     //it probably forces changing type from ArrayList to something that stores elements in order
@@ -66,6 +66,17 @@ public abstract class AbstractWorldMap implements IWorldMap, IObserver {
                             RandomNumberGenerator.getRandomNumber(0, this.height));
     }
 
+    public void placeAt(Animal animal) {
+        if (this.animals.get(animal.getPosition()) != null) {
+            this.animals.get(animal.getPosition()).add(animal);
+        }
+        else {
+            TreeSet<Animal> fieldAnimalList = new TreeSet<>(new AnimalComparator());
+            fieldAnimalList.add(animal);
+            this.animals.put(animal.getPosition(), fieldAnimalList);
+        }
+    }
+
     public TreeSet<Animal> animalsAt(Vector2d position) {
         return this.animals.get(position);
     }
@@ -76,14 +87,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IObserver {
 
     public void positionChanged(Animal animal, Vector2d oldPosition) {
         this.animals.get(oldPosition).remove(animal);
-        if (this.animals.get(animal.getPosition()) != null) {
-            this.animals.get(animal.getPosition()).add(animal);
-        }
-        else {
-            TreeSet<Animal> fieldAnimalList = new TreeSet<>(new AnimalComparator());
-            fieldAnimalList.add(animal);
-            this.animals.put(animal.getPosition(), fieldAnimalList);
-        }
+        this.placeAt(animal);
     }
 
     public void stateChanged() {
