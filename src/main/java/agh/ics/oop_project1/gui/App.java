@@ -235,7 +235,7 @@ public class App extends Application {
             for(Animal animal: engine.getAnimals()) {
                 animal.addObserver(observer);
             }
-            VBox mainContainer = new VBox(8, stats, simulationContainer);
+            VBox mainContainer = new VBox(12, stats, simulationContainer);
             newSimulation.setScene(new Scene(mainContainer));
             newSimulation.show();
             engineThread.start();
@@ -249,6 +249,8 @@ public class App extends Application {
                 mapWidth,
                 mapVariantLabel,
                 mapVariant,
+                energyDrainAmountLabel,
+                energyDrainAmount,
                 numberOfAnimalsLabel,
                 numberOfAnimals,
                 lengthOfGenomeLabel,
