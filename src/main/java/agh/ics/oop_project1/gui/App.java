@@ -18,6 +18,50 @@ import java.util.Objects;
 
 public class App extends Application {
 
+    private class DayChangeObserver implements IDayChangeObserver {
+
+        SimulationEngine engine;
+        StatisticsSet set;
+        Label numberOfAnimals;
+        Label numberOfFlora;
+        Label numberOfFreeFields;
+        Label mostPopularGenotype;
+        Label averageEnergy;
+        Label averageLifespan;
+
+        public DayChangeObserver(
+                SimulationEngine engine,
+                Label numberOfAnimals,
+                Label numberOfFlora,
+                Label numberOfFreeFields,
+                Label mostPopularGenotype,
+                Label averageEnergy,
+                Label averageLifespan
+        ) {
+            this.engine = engine;
+            this.set = engine.returnStatistics();
+            this.numberOfAnimals = numberOfAnimals;
+            this.numberOfFlora = numberOfFlora;
+            this.numberOfFreeFields = numberOfFreeFields;
+            this.mostPopularGenotype = mostPopularGenotype;
+            this.averageEnergy = averageEnergy;
+            this.averageLifespan = averageLifespan;
+        }
+
+        public void dayChanged() {
+            Platform.runLater(() -> {
+                this.set = engine.returnStatistics();
+                this.numberOfAnimals.setText("Number of animals: " + this.set.numberOfAnimals());
+                this.numberOfFlora.setText("Number of flora: " + this.set.numberOfFlora());
+                this.numberOfFreeFields.setText("Number of free fields: " + this.set.numberOfFreeFields());
+                this.mostPopularGenotype.setText("Most popular genotype: " + this.set.mostPopularGenotype());
+                this.averageEnergy.setText("Average energy: " + Math.round(this.set.averageEnergy() * 100) / 100);
+                this.averageLifespan.setText("Average lifespan: " + Math.round(this.set.averageLifespan() * 100) / 100);
+            });
+        }
+
+    }
+
     private class SimulationObserver implements IObserver {
 
         SimulationEngine engine;
@@ -138,7 +182,48 @@ public class App extends Application {
                     parseTextFieldToInt(lengthOfGenome)
             );
             Thread engineThread = new Thread(engine);
+            Button startSimulation = new Button("Start");
+            startSimulation.setOnAction(actionSimulationEvent -> {
+                Thread.currentThread().notifyAll();
+            });
+            Button pauseSimulation = new Button("Pause");
+            pauseSimulation.setOnAction(actionSimulationEvent -> {
+                try {
+                    engineThread.wait();
+                }
+                catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            });
+            HBox simulationControls = new HBox(8, pauseSimulation, startSimulation);
             GridPane grid = new GridPane();
+            VBox simulationContainer = new VBox(8, simulationControls, grid);
+
+            Label simulationNumberOfAnimals = new Label("Number of animals: " + numberOfAnimals);
+            Label simulationNumberOfFlora = new Label("Number of flora: " + startingFlora);
+            Label simulationNumberOfFreeFields = new Label("Number of free fields: " + 0);
+            Label simulationMostPopularGenotype = new Label("Most popular genotype:");
+            Label simulationAverageEnergy = new Label("Average energy: " + initialEnergy);
+            Label simulationAverageLifespan = new Label("Average lifespan:");
+            DayChangeObserver statObserver = new DayChangeObserver(
+                    engine,
+                    simulationNumberOfAnimals,
+                    simulationNumberOfFlora,
+                    simulationNumberOfFreeFields,
+                    simulationMostPopularGenotype,
+                    simulationAverageEnergy,
+                    simulationAverageLifespan
+            );
+            engine.addDayChangeObserver(statObserver);
+            VBox stats = new VBox(8,
+                    simulationNumberOfAnimals,
+                    simulationNumberOfFlora,
+                    simulationNumberOfFreeFields,
+                    simulationMostPopularGenotype,
+                    simulationAverageEnergy,
+                    simulationAverageLifespan);
+
             try {
                 this.renderGrid(map, grid);
             }
@@ -150,7 +235,8 @@ public class App extends Application {
             for(Animal animal: engine.getAnimals()) {
                 animal.addObserver(observer);
             }
-            newSimulation.setScene(new Scene(grid));
+            VBox mainContainer = new VBox(8, stats, simulationContainer);
+            newSimulation.setScene(new Scene(mainContainer));
             newSimulation.show();
             engineThread.start();
         });
@@ -205,13 +291,7 @@ public class App extends Application {
             ImageView image = new ImageView(new Image(new FileInputStream(element.getImageUrl())));
             image.setFitWidth(20);
             image.setFitHeight(20);
-            Label label = new Label();
-            if (element instanceof Animal) {
-                label.setText(element.getPosition().toString());
-            }
-            else {
-                label.setText("Grass");
-            }
+            Label label = new Label(element.toString());
             this.container = new VBox(2, image, label);
             this.container.setAlignment(Pos.CENTER);
         }
@@ -246,7 +326,6 @@ public class App extends Application {
         }
 
         for (IMapElement element: map.getElements().values()) {
-            if (element instanceof Flora) System.out.println("AA");
 //            VBox box = new GuiElementBox(element).container;
             Label box = new Label(element.toString());
             GridPane.setHalignment(box, HPos.CENTER);

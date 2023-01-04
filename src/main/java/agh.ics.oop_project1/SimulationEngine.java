@@ -3,7 +3,7 @@ package agh.ics.oop_project1;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SimulationEngine implements Runnable {
+public class SimulationEngine implements Runnable, IDayChangeObserver {
 
     private IWorldMap map;
     private int numberOfAnimals;
@@ -20,6 +20,7 @@ public class SimulationEngine implements Runnable {
     private int maxMutations;
     private long daysLivedByDead = 0;
     private long deadCount = 0;
+    private final ArrayList<IDayChangeObserver> dayChangeObservers = new ArrayList<>();
 
     public SimulationEngine(ConfigurationManager configmanager) {
         if(configmanager.getMapVariant().equals("globe")) {
@@ -125,9 +126,11 @@ public class SimulationEngine implements Runnable {
                 }
                 for (Animal animal : toBeRemoved) {
                     animals.remove(animal);
+                    Thread.sleep(50);
                 }
                 for (Animal animal : animals) {
                     animal.move();
+                    Thread.sleep(50);
                 }
                 for (Animal animal : animals) {
                     animal.consumeFlora(nutritionValue);
@@ -213,7 +216,7 @@ public class SimulationEngine implements Runnable {
 
                 map.putFlora(this.floraGrowth);
                 this.currentDay++;
-                Thread.sleep(500);
+                this.dayChanged();
             }
         }
         catch (InterruptedException ex) {
@@ -221,5 +224,14 @@ public class SimulationEngine implements Runnable {
         }
     }
 
+    public void dayChanged() {
+        for(IDayChangeObserver observer: this.dayChangeObservers) {
+            observer.dayChanged();
+        }
+    }
+
+    public void addDayChangeObserver(IDayChangeObserver observer) {
+        this.dayChangeObservers.add(observer);
+    }
 
 }
