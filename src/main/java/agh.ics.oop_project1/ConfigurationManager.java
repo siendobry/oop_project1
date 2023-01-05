@@ -2,8 +2,8 @@ package agh.ics.oop_project1;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -64,6 +64,7 @@ public class ConfigurationManager {
     private int mapHeight;
     private int mapWidth;
     private String mapVariant;
+    private int energyDrainAmount = 0;
     private int numberOfAnimals;
     private int lengthOfGenome;
     private int initialEnergy;
@@ -75,7 +76,7 @@ public class ConfigurationManager {
     private int minMutations;
     private int maxMutations;
 
-    public int getDrainEnergyAmount() {
+    public int getEnergyDrainAmount() {
         return drainEnergyAmount;
     }
 
@@ -102,17 +103,17 @@ public class ConfigurationManager {
             String value = arg[1];
             switch (propertyName) {
                 case "mapHeight" -> {
-                    if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > 54) {
-                        throw new IllegalArgumentException("Invalid map height");
+                    if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > 36) {
+                        throw new IllegalArgumentException("Invalid map height (has to be greater than 0 and smaller than 37");
                     }
-                    this.mapHeight = Integer.parseInt(value) - 1;
+                    this.mapHeight = Integer.parseInt(value);
                     proprietyChecker[0] = true;
                 }
                 case "mapWidth" -> {
-                    if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > 96) {
-                        throw new IllegalArgumentException("Invalid map width");
+                    if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > 90) {
+                        throw new IllegalArgumentException("Invalid map width (has to be greater than 0 and smaller than 91");
                     }
-                    this.mapWidth = Integer.parseInt(value) - 1;
+                    this.mapWidth = Integer.parseInt(value);
                     proprietyChecker[1] = true;
                 }
                 case "mapVariant" -> {
@@ -127,51 +128,57 @@ public class ConfigurationManager {
                     }
                     proprietyChecker[2] = true;
                 }
+                case "energyDrainAmount" -> {
+                    if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
+                        throw new IllegalArgumentException("Invalid energy drain amount (has to be greater than 0 and smaller than mapHeight times mapWidth)");
+                    }
+                    this.numberOfAnimals = Integer.parseInt(value);
+                }
                 case "numberOfAnimals" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > 2 * this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid number of animals");
+                        throw new IllegalArgumentException("Invalid number of animals (has to be greater than 0 and smaller than mapHeight times mapWidth)");
                     }
                     this.numberOfAnimals = Integer.parseInt(value);
                     proprietyChecker[3] = true;
                 }
                 case "lengthOfGenome" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid length of genome");
+                        throw new IllegalArgumentException("Invalid length of genom (has to be greater than 0 and smaller than mapHeight times mapWidth)e");
                     }
                     this.lengthOfGenome = Integer.parseInt(value);
                     proprietyChecker[4] = true;
                 }
                 case "initialEnergy" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid initial energy value");
+                        throw new IllegalArgumentException("Invalid initial energy value (has to be greater than 0 and smaller than mapHeight times mapWidth)");
                     }
                     this.initialEnergy = Integer.parseInt(value);
                     proprietyChecker[5] = true;
                 }
                 case "startingFlora" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid length of genome");
+                        throw new IllegalArgumentException("Invalid length of genome (has to be greater than 0 and smaller than mapHeight times mapWidth)");
                     }
                     this.startingFlora = Integer.parseInt(value);
                     proprietyChecker[6] = true;
                 }
                 case "floraGrowth" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid length of genome");
+                        throw new IllegalArgumentException("Invalid length of genome (has to be greater than 0 and smaller than mapHeight times mapWidth)");
                     }
                     this.floraGrowth = Integer.parseInt(value);
                     proprietyChecker[7] = true;
                 }
                 case "nutritionValue" -> {
                     if (Integer.parseInt(value) < 0 || Integer.parseInt(value) > this.mapHeight * this.mapWidth) {
-                        throw new IllegalArgumentException("Invalid nutrition value");
+                        throw new IllegalArgumentException("Invalid nutrition value (has to be greater than 0 and smaller than mapHeight times mapWidth)");
                     }
                     this.nutritionValue = Integer.parseInt(value);
                     proprietyChecker[8] = true;
                 }
                 case "energyNeededToBreed" -> {
                     if(Integer.parseInt(value) < 0) {
-                        throw new IllegalArgumentException("Invalid value of energy needed to breed");
+                        throw new IllegalArgumentException("Invalid value of energy needed to breed (has to be greater than 0)");
                     }
                     this.energyNeededToBreed = Integer.parseInt(value);
                     proprietyChecker[9] = true;
@@ -179,7 +186,7 @@ public class ConfigurationManager {
 
                 case "energyLossOnBreeding" -> {
                     if(Integer.parseInt(value) < 0) {
-                        throw new IllegalArgumentException("Invalid value of energy loss on breeding");
+                        throw new IllegalArgumentException("Invalid value of energy loss on breeding (has to be greater than 0)");
                     }
                     this.energyLossOnBreeding = Integer.parseInt(value);
                     proprietyChecker[10] = true;
@@ -187,7 +194,7 @@ public class ConfigurationManager {
 
                 case "minMutations" -> {
                     if(Integer.parseInt(value) < 0) {
-                        throw new IllegalArgumentException("Invalid max value of mutations");
+                        throw new IllegalArgumentException("Invalid max value of mutations (has to be greater than 0)");
                     }
                     this.minMutations = Integer.parseInt(value);
                     proprietyChecker[11] = true;
@@ -195,7 +202,7 @@ public class ConfigurationManager {
 
                 case "maxMutations" -> {
                     if(Integer.parseInt(value) < 0) {
-                        throw new IllegalArgumentException("Invalid max value of mutations");
+                        throw new IllegalArgumentException("Invalid max value of mutations (has to be greater than 0)");
                     }
                     this.maxMutations = Integer.parseInt(value);
                     proprietyChecker[12] = true;
@@ -203,17 +210,29 @@ public class ConfigurationManager {
 
                 case "drainEnergyAmount" -> {
                     if (Integer.parseInt(value) < 0 ) {
-                        throw new IllegalArgumentException("Invalid drain energy amount");
+                        throw new IllegalArgumentException("Invalid drain energy amount (has to be greater than 0)");
                     }
                     this.drainEnergyAmount = Integer.parseInt(value);
                 }
             }
         }
-        Boolean check = true;
+        boolean check = true;
         for(Boolean processed : proprietyChecker)
             check = check && processed;
         if(!check) {
             throw new IllegalArgumentException("Configuration lacks some of the fields");
+        }
+    }
+
+    public static void saveConfig(String config, String fileName) throws IOException {
+        File file = new File("configs/" + fileName + ".cfg");
+        if (!file.exists()) {
+            FileWriter writer = new FileWriter("configs/" + fileName + ".cfg", false);
+            writer.write(config);
+            writer.close();
+        }
+        else {
+            throw new IOException("File with this name already exists!");
         }
     }
 

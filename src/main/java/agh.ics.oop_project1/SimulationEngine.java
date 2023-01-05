@@ -27,7 +27,7 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
             this.map = new GlobeMap(configmanager.getMapHeight(), configmanager.getMapWidth());
         }
         else if(configmanager.getMapVariant().equals("nether")) {
-            this.map = new NetherMap(configmanager.getMapHeight(), configmanager.getMapWidth(), configmanager.getDrainEnergyAmount());
+            this.map = new NetherMap(configmanager.getMapHeight(), configmanager.getMapWidth(), configmanager.getEnergyDrainAmount());
         }
 
         this.numberOfAnimals = configmanager.getNumberOfAnimals();
@@ -38,7 +38,6 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
         this.minMutations = configmanager.getMinMutations();
         this.maxMutations = configmanager.getMaxMutations();
         this.lengthOfGenome = configmanager.getLengthOfGenome();
-
         for(int i = 0; i < numberOfAnimals; i++) {
             Animal animal = new Animal(map, configmanager.getLengthOfGenome(), configmanager.getInitialEnergy(), animalCounter, currentDay);
             animals.add(animal);
