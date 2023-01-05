@@ -21,6 +21,7 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
     private long daysLivedByDead = 0;
     private long deadCount = 0;
     private final ArrayList<IDayChangeObserver> dayChangeObservers = new ArrayList<>();
+    private boolean isWaiting = false;
 
     public SimulationEngine(ConfigurationManager configmanager) {
         if(configmanager.getMapVariant().equals("globe")) {
@@ -85,6 +86,14 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
         this.maxMutations = maxMutations;
     }
 
+    public void changeToWaiting() {
+        this.isWaiting = true;
+    }
+
+    public void changeFromWaiting() {
+        notify();
+    }
+
     public List<Animal> getAnimals() {
         return Collections.unmodifiableList(this.animals);
     }
@@ -111,9 +120,18 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
         return new StatisticsSet(animalsAlive, floraCount, numberOfFreeFields, mostPopularGenotype, averageEnergy, averageDaysLived);
     }
 
-    public void run() {
-        try {
-            while (animals.size() > 0) {
+    public synchronized void run() {
+        while (animals.size() > 0) {
+            try {
+                try {
+                    while (this.isWaiting) {
+                        this.wait();
+                    }
+                    this.isWaiting = false;
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
                 ArrayList<Animal> toBeRemoved = new ArrayList<>();
                 for (Animal animal : animals) {
                     if (animal.getEnergy() <= 0) {
@@ -191,11 +209,10 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
                             animalCounter++;
                             String genomeString = animal.getGenome().stream().map(Object::toString)
                                     .collect(Collectors.joining());
-                            if(!mostPopularGenotypes.containsKey(genomeString)) {
-                                mostPopularGenotypes.put(genomeString,1);
-                            }
-                            else {
-                                mostPopularGenotypes.put(genomeString, mostPopularGenotypes.remove(genomeString)+1);
+                            if (!mostPopularGenotypes.containsKey(genomeString)) {
+                                mostPopularGenotypes.put(genomeString, 1);
+                            } else {
+                                mostPopularGenotypes.put(genomeString, mostPopularGenotypes.remove(genomeString) + 1);
                             }
                             firstAnimal.breed(energyLossOnBreeding);
                             secondAnimal.breed(energyLossOnBreeding);
@@ -217,9 +234,9 @@ public class SimulationEngine implements Runnable, IDayChangeObserver {
                 this.currentDay++;
                 this.dayChanged();
             }
-        }
-        catch (InterruptedException ex) {
-            ex.printStackTrace();
+            catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 

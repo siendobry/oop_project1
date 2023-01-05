@@ -252,19 +252,9 @@ public class App extends Application {
             }
             Thread engineThread = new Thread(engine);
             Button startSimulation = new Button("Start");
-            startSimulation.setOnAction(actionSimulationEvent -> {
-                Thread.currentThread().notifyAll();
-            });
+            startSimulation.setOnAction(actionSimulationEvent -> new Alert(Alert.AlertType.INFORMATION, "Zaraz nastapi wznowienie... nic z tych rzeczy:(", ButtonType.OK).show());
             Button pauseSimulation = new Button("Pause");
-            pauseSimulation.setOnAction(actionSimulationEvent -> {
-                try {
-                    engineThread.wait();
-                }
-                catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                    throw new RuntimeException(ex);
-                }
-            });
+            pauseSimulation.setOnAction(actionSimulationEvent -> engine.changeToWaiting());
             HBox simulationControls = new HBox(8, pauseSimulation, startSimulation);
             GridPane grid = new GridPane();
             VBox simulationContainer = new VBox(8, simulationControls, grid);
